@@ -9,6 +9,8 @@ export default defineController(() => ({
       board: boardrepository.getBoard().board,
       turnColor: boardrepository.getBoard().turnColor,
       me_color: userColorRepository.getUserColor(user.id),
+      black_number: boardrepository.getBoard().black_number,
+      white_number: boardrepository.getBoard().white_number,
     },
   }),
 

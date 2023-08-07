@@ -2,7 +2,17 @@ import type { UserId } from '$/commonTypesWithClient/branded';
 import { userColorRepository } from './userColorRepository';
 export type BoardArr = number[][];
 export type Pos = { x: number; y: number };
-const board: BoardArr = [
+let board: BoardArr = [
+  [0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 7, 0, 0, 0, 0],
+  [0, 0, 7, 2, 1, 0, 0, 0],
+  [0, 0, 0, 1, 2, 7, 0, 0],
+  [0, 0, 0, 0, 7, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0],
+];
+const re_board: BoardArr = [
   [0, 0, 0, 0, 0, 0, 0, 0],
   [0, 0, 0, 0, 0, 0, 0, 0],
   [0, 0, 0, 7, 0, 0, 0, 0],
@@ -23,6 +33,8 @@ const directions = [
   [-1, -1],
 ];
 let turnColor = 1;
+let black_number = 2;
+let white_number = 2;
 //0座標取得(候補地設置に使用)
 const get_zero_positions = () => {
   const zero_positions: number[][] = [];
@@ -34,6 +46,18 @@ const get_zero_positions = () => {
     });
   });
   return zero_positions;
+};
+//駒カウント
+const count = (serch_number: number) => {
+  let count = 0;
+  board.forEach((row) =>
+    row.forEach((cell) => {
+      if (cell === serch_number) {
+        count++;
+      }
+    })
+  );
+  return count;
 };
 //過去の黄色枠座標消去
 const remove_yellow = () => {
@@ -92,7 +116,6 @@ const Possible_click_positions = (positions: number[][], select: number): number
   let result: number[][] | undefined = undefined;
   let reversi_positions: number[][] = [];
   const temporary_reversi_positions: number[][] = [];
-
   positions.forEach((a_position) => {
     directions.forEach((one_direction) => {
       if (
@@ -126,16 +149,43 @@ const othello = (y: number, x: number) => {
     turnColor = 3 - turnColor;
   }
 };
-
+//pass
+const pass = () => {
+  count(7) === 0 && (turnColor = 3 - turnColor);
+  Possible_click_positions(get_zero_positions(), 0);
+};
+//reset
+const reset = (y: number, x: number) => {
+  if (y === 8 && x === 8) {
+    board = re_board;
+    remove_yellow();
+  }
+};
 export const boardrepository = {
-  getBoard: (): { board: BoardArr; turnColor: number } => {
-    return { board, turnColor };
+  getBoard: (): {
+    board: BoardArr;
+    turnColor: number;
+    black_number: number;
+    white_number: number;
+  } => {
+    return { board, turnColor, black_number, white_number };
   },
   clickBoard: (params: Pos, userId: UserId): BoardArr => {
     if (turnColor === userColorRepository.getUserColor(userId)) {
-      othello(params.y, params.x);
+      console.log(1);
+      othello(Math.min(7, params.y), Math.min(7, params.x));
+      console.log(2);
       remove_yellow();
+      console.log(3);
       Possible_click_positions(get_zero_positions(), 0);
+      console.log(4);
+      reset(params.y, params.x);
+      console.log(5);
+      black_number = count(1);
+      white_number = count(2);
+      console.log(6);
+      pass();
+      console.log(1);
     }
     return board;
   },
